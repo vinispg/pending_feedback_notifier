@@ -1,8 +1,12 @@
 Redmine::Plugin.register :pending_feedback_notifier do
   name 'Pending Feedback Notifier plugin'
-  author 'Author name'
-  description 'This is a plugin for Redmine'
-  version '0.0.1'
-  url 'http://example.com/path/to/plugin'
-  author_url 'http://example.com/about'
+  author 'Vinicios Spigiorin'
+  description 'Plugin de notificação diária via email para chamados com o status Aguardando Feedback'
+  version '1.0.0'
+  url 'https://github.com/vinispg/pending_feedback_notifier'
+  author_url 'https://github.com/vinispg'
 end
+
+#define o path do rake
+Dir.glob(File.expand_path("../../plugins/pending_feedback_notifier/lib/tasks/*.rake", __FILE__)).each { |r| import r }
+
