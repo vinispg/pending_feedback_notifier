@@ -1,3 +1,9 @@
 = pending_feedback_notifier
 
 Description goes here
+
+== Cria o cronjob
+docker-compose exec redmine sh -c "crontab /usr/src/redmine/plugins/pending_feedback_notifier/cronjobs && crond -f"
+
+== Roda o rake manualmente
+bundle exec rake send_feedback_reminders:send RAILS_ENV=production

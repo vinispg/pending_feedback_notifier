@@ -1,0 +1,5 @@
+MAILTO="" 
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+05 * * * * cd /usr/src/redmine && bundle exec rake send_feedback_reminders:send RAILS_ENV=production

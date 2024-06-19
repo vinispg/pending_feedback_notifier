@@ -10,3 +10,5 @@ end
 #define o path do rake
 Dir.glob(File.expand_path("../../plugins/pending_feedback_notifier/lib/tasks/*.rake", __FILE__)).each { |r| import r }
 
+require_relative 'app/models/mailer'
+require_dependency 'mailer'
