@@ -1,12 +1,14 @@
 class Mailer < ActionMailer::Base
   default from: 'redmine@unochapeco.edu.br'
 
-  def send_feedback_email(user, subject)
+  def send_feedback_email(user, issues)
     @user = user
+    @issues = issues
 
-    mail(to: @user.mail, subject: subject) do |format|
-      format.html { render 'send_feedback_email' }  # Renderiza o template send_feedback_email.html.erb
+    mail(to: @user.mail, subject: "Chamados aguardando feedback") do |format|
+      format.html { render 'send_feedback_email'}
     end
-    Rails.logger.info "Email enviado para #{@user.mail}" # Debug
+
+    Rails.logger.info "Email enviado para #{user.mail}" # Debug
   end
 end

@@ -1,11 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Email Feedback</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chamados aguardando feedback</title>
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          margin: 0;
+          padding: 0;
+          background-color: #f5f5f5;
+      }
+      .container {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 20px;
+      }
+      h1 {
+          color: #333;
+          margin-bottom: 20px;
+      }
+      p {
+          color: #666;
+      }
+      ul {
+          list-style-type: none;
+          padding: 0;
+      }
+      li {
+          margin-bottom: 10px;
+      }
+      .closed {
+          color: #d9534f;
+          font-weight: bold;
+      }
+  </style>
 </head>
 <body>
-<h1>Olá</h1>
-<p>Este é um e-mail de feedback.</p>
+<div class="container">
+  <h1>Olá <%= @user.name %>,</h1>
+  <p>Seu feedback é essencial. Estamos enviando este lembrete com os chamados aguardando sua avaliação. Por favor, verifique se suas necessidades foram atendidas. Lembre-se, após três notificações sem resposta, o chamado será <b>encerrado automaticamente.</b></p>
+  <ul>
+    <% @issues.each do |issue| %>
+      <li>
+        <a href="http://localhost/issues/<%= issue.id %>"><%= issue.subject %></a>
+        <% if issue.status.name == "Fechada" %>
+          <span class="closed">(encerrado por falta de feedback)</span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>
 </body>
 </html>

@@ -1,9 +1,25 @@
 = pending_feedback_notifier
 
-Description goes here
-
-== Cria o cronjob
-docker-compose exec redmine sh -c "crontab /usr/src/redmine/plugins/pending_feedback_notifier/cronjobs && crond -f"
-
 == Roda o rake manualmente
 bundle exec rake send_feedback_reminders:send RAILS_ENV=production
+
+== Necessário a instalação do crond para que execute as instruções do crontab
+
+== Instalar o crond dentro do container
+apk update
+apk add busybox-suid
+
+== Verificar instalação
+which crond
+
+== Iniciar o crond
+crond -f -l 8
+
+== Verificar se o crond está rodando
+ps aux | grep crond
+
+== Instalar o crond via docker-compose.yml
+command: sh -c "apk update && apk add --no-cache busybox-suid && crond -b -l 8 && tail -f /dev/null"
+
+== Criar diretório para os scripts que vão ser executados pelo crontab e mapear os volumes no docker-compose.yml
+- ./redmine-crontab/daily:/etc/periodic/daily

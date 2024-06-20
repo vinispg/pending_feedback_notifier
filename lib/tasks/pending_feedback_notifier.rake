@@ -1,55 +1,50 @@
-# namespace :send_feedback_reminders do
-#   desc "Envia notificações via email para usuários com chamados 'Aguardando Feedback'"
-#   task send: :environment do
-#     Issue.where(status: Status.find_by(name: 'Aguardando Feedback')).each do |issue|
-#       user = issue.author
-#       Mailer.feedback_email(user, issue).deliver_now
-#     end
-#   end
-# end
-
 # lib/tasks/send_feedback_requests.rake
 ENV['PATH'] = '/usr/local/bin:/usr/bin:/bin'
+
 namespace :send_feedback_reminders do
   desc "Envia notificações via email para usuários com chamados 'Aguardando Feedback'"
   task send: :environment do
     Rails.logger.info "Inicio"
 
     waiting_feedback_status = IssueStatus.find_by(name: 'Aguardando Feedback')
-    Rails.logger.info "waiting #{waiting_feedback_status}"
-
-    closed_status = IssueStatus.find_by(name: 'Fechado')
-    Rails.logger.info "closed #{closed_status}"
-
+    closed_status = IssueStatus.find_by(name: 'Fechada')
     issues_by_user = Issue.where(status: waiting_feedback_status).group_by(&:author)
-    Rails.logger.info "issues_by_user #{issues_by_user}"
 
     issues_by_user.each do |user, issues|
-      feedback_count = issues.first.custom_field_value(CustomField.find_by(name: 'feedback_request_count')).to_i
-      Rails.logger.info "feedback_count #{feedback_count}"
+      issues.each do |issue|
+        feedback_count = issue.custom_value_for(CustomField.find_by(name: 'feedback_request_count')).to_s.to_i
 
-      if feedback_count < 3
-        Rails.logger.info "PARAMETROS PARA O EMAIL #{user} issues #{issues}"
-
-        userObj = issues.first.author
-        Rails.logger.info "OBJETO USUARIO #{userObj.mail}"
-        # Envie o email com a lista de chamados
-        Mailer.send_feedback_email(userObj, "teste").deliver_now
-
-        # Atualize o campo personalizado para cada chamado
-        issues.each do |issue|
-          issue.custom_field_values = { CustomField.find_by(name: 'feedback_request_count').id => (feedback_count + 1).to_s }
+        if feedback_count <= 10
+          # Adiciona registro de data e hora no log
+          log_field = CustomField.find_by(name: 'feedback_request_log')
+          log_value = issue.custom_value_for(log_field).to_s
+          new_log = "#{Time.now}: Chamado enviado para feedback\n"
+          issue.custom_field_values = { log_field.id => (log_value + new_log) }
           issue.save
-        end
-      elsif feedback_count >= 3
-        # Verifique se é sábado ou domingo
-        if ![0, 6].include?(Time.now.wday) # 0 para Domingo, 6 para Sábado
-          # Mude o status dos chamados para "Fechado"
-          issues.each do |issue|
-            issue.update(status: closed_status)
-          end
+
+          # Incrementa o contador de feedback para este chamado
+          feedback_count += 1
+          issue.custom_field_values = { CustomField.find_by(name: 'feedback_request_count').id => feedback_count.to_s }
+          issue.save
+        else
+          # Caso o chamado tenha mais de 3 envios de feedback, fecha o chamado
+          issue.update(status: closed_status)
+
+          note = Journal.new(
+            journalized_id: issue.id, # ID do chamado
+            journalized_type: 'Issue', # Tipo de entidade (neste caso, Issue)
+            user_id: 1, # ID do usuário
+            notes: 'Chamado encerrado automaticamente por falta de feedback', # Conteúdo da nota
+            private_notes: true # Torna a nota privada
+          )
+
+          note.save
         end
       end
+
+      # Envia um email com todos os chamados aguardando feedback para o usuário
+      #emails = issues.map { |issue| issue.subject }
+      Mailer.send_feedback_email(user, issues).deliver_now
     end
   end
 end
