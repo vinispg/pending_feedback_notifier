@@ -42,10 +42,10 @@
   <h1>Olá <%= @user.name %>,</h1>
   <p>Seu feedback é essencial. Estamos enviando este lembrete com os chamados aguardando sua avaliação. Por favor, verifique se suas necessidades foram atendidas. Lembre-se, após três notificações sem resposta, o chamado será <b>encerrado automaticamente.</b></p>
   <ul>
-    <% @issues.each do |issue| %>
+    <% @issues_with_counts.each do |item| %>
       <li>
-        <a href="http://localhost/issues/<%= issue.id %>"><%= issue.subject %></a>
-        <% if issue.status.name == "Fechada" %>
+        <a href="http://localhost/issues/<%= item[:issue].id %>"><%= item[:issue].subject %></a> - Notificações Enviadas: <%= item[:feedback_count] %> de 3
+        <% if item[:issue].status.name == "Fechada" %>
           <span class="closed">(encerrado por falta de feedback)</span>
         <% end %>
       </li>
